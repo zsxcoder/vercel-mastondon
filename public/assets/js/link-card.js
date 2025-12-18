@@ -5,31 +5,46 @@
     
     // 从内容中提取URL并转换为卡片
     function processLinkCards(content) {
-        // 正则表达式匹配URL
+        // 首先识别所有链接并标记它们，但不立即替换
         const urlRegex = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/g;
+        const links = [];
+        let processedContent = content;
         
-        // 替换URL为卡片HTML
-        return content.replace(urlRegex, (url) => {
+        // 识别所有非图片链接
+        processedContent = processedContent.replace(urlRegex, (url) => {
             // 检查是否是图片链接，如果是则不处理为卡片
             if (isImageUrl(url)) {
                 return url;
             }
             
-            // 创建一个唯一的ID
-            const cardId = 'link-card-' + Math.random().toString(36).substr(2, 9);
+            // 生成唯一标识符
+            const linkId = 'link-' + Math.random().toString(36).substr(2, 9);
+            links.push({ id: linkId, url });
             
-            // 立即显示加载状态的卡片
-            setTimeout(() => {
-                const container = document.getElementById(cardId);
-                if (container) {
-                    // 加载预览数据
-                    fetchLinkPreview(url, cardId);
-                }
-            }, 100);
-            
-            // 返回卡片容器HTML
-            return `<div id="${cardId}" class="link-card-container" data-url="${url}"></div>`;
+            // 返回带有标记的原始链接
+            return `<span class="original-link" data-link-id="${linkId}">${url}</span>`;
         });
+        
+        // 在内容末尾添加所有卡片容器
+        if (links.length > 0) {
+            processedContent += '<div class="link-cards-section">';
+            links.forEach(link => {
+                processedContent += `<div id="card-${link.id}" class="link-card-container" data-url="${link.url}"></div>`;
+            });
+            processedContent += '</div>';
+            
+            // 延迟加载所有卡片
+            setTimeout(() => {
+                links.forEach(link => {
+                    const container = document.getElementById(`card-${link.id}`);
+                    if (container) {
+                        fetchLinkPreview(link.url, `card-${link.id}`);
+                    }
+                });
+            }, 100);
+        }
+        
+        return processedContent;
     }
     
     // 检查URL是否是图片

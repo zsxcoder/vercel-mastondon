@@ -3,6 +3,37 @@
     margin: 1rem 0;
 }
 
+/* 原始链接样式 */
+.original-link {
+    word-break: break-all;
+}
+
+/* 卡片区域容器 */
+.link-cards-section {
+    margin-top: 1.5rem;
+    border-top: 1px dashed rgba(128, 128, 128, 0.2);
+    padding-top: 1rem;
+}
+
+/* 主题检测 - 使用CSS变量和媒体查询确保正确适配主题 */
+body[data-theme="dark"] .link-card,
+@media (prefers-color-scheme: dark) {
+    .link-card {
+        background-color: var(--ld-bg-card, #1a1a1a);
+        color: var(--ld-text, #ffffff);
+    }
+}
+
+/* 默认为浅色模式 */
+body:not([data-theme="dark"]) .link-card,
+@media (prefers-color-scheme: light), 
+@media not (prefers-color-scheme: dark) {
+    .link-card {
+        background-color: #ffffff;
+        color: #333333;
+    }
+}
+
 .link-card {
     display: flex;
     align-items: center;
@@ -13,10 +44,8 @@
     padding: 0.75rem;
     border-radius: 0.5rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    background-color: var(--ld-bg-card, #ffffff);
     transition: all 0.3s ease;
     text-decoration: none;
-    color: inherit;
     overflow: hidden;
 }
 
@@ -68,14 +97,6 @@
     background-color: rgba(128, 128, 128, 0.1);
     border-radius: 4px;
     color: transparent;
-}
-
-/* 深色模式适配 */
-@media (prefers-color-scheme: dark) {
-    .link-card {
-        background-color: var(--ld-bg-card, #1a1a1a);
-        color: var(--ld-text, #ffffff);
-    }
 }
 
 /* 响应式调整 */
