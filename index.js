@@ -29,6 +29,7 @@ app.get('/', (req, res) => {
         <link href="assets/css/APlayer.min.css" rel="stylesheet" type="text/css">
         <link href="assets/css/highlight.github.min.css" rel="stylesheet" type="text/css">
         <link href="assets/css/custom.css" rel="stylesheet" type="text/css">
+        <link href="assets/css/link-card.css" rel="stylesheet" type="text/css">
         <title>${Tittle}</title>              
         <link rel="stylesheet" href="https://cdn.0tz.top/lxgw-wenkai-screen-webfont/style.css" /> 
         <style>body{font-family:"LXGW WenKai Screen",sans-serif;}</style>
@@ -64,6 +65,7 @@ app.get('/', (req, res) => {
         <script type="text/javascript" src="assets/js/APlayer.min.js"></script>
         <script type="text/javascript" src="assets/js/Meting.min.js"></script>
         <script type="text/javascript" src="assets/js/main.js"></script>
+        <script type="text/javascript" src="assets/js/link-card.js"></script>
         <script type="text/javascript" src="assets/js/custom.js"></script>
     </body>
     </html>
@@ -71,6 +73,88 @@ app.get('/', (req, res) => {
 
     res.send(html);
 });
+
+// 代理网页卡片元数据
+app.get('/api/link-preview', async (req, res) => {
+    const { url } = req.query;
+    
+    if (!url) {
+        return res.status(400).json({ error: '缺少URL参数' });
+    }
+
+    try {
+        // 创建一个忽略SSL证书错误的axios实例
+        const https = require('https');
+        const axiosInstance = axios.create({
+            httpsAgent: new https.Agent({
+                rejectUnauthorized: false // 忽略自签名证书错误
+            }),
+            timeout: 5000,
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            }
+        });
+
+        // 发起请求获取网页内容
+        const response = await axiosInstance.get(url);
+        
+        const html = response.data;
+        
+        // 提取元数据
+        const title = matchMeta(html, ['og:title', 'title']) || getDomain(url);
+        const description = matchMeta(html, ['og:description', 'description']) || '';
+        const image = matchMeta(html, ['og:image', 'image']);
+        const siteName = matchMeta(html, ['og:site_name']) || getDomain(url);
+        
+        res.json({
+            title,
+            description,
+            image,
+            siteName,
+            url
+        });
+    } catch (error) {
+        console.error(`获取链接预览失败 (${url}):`, error.message);
+        // 降级处理：只返回基本信息
+        res.json({
+            title: getDomain(url),
+            description: '点击访问网站',
+            image: '',
+            siteName: getDomain(url),
+            url
+        });
+    }
+});
+
+// 辅助函数：匹配元数据
+function matchMeta(html, names) {
+    for (const name of names) {
+        // 匹配不同的元数据格式
+        const patterns = [
+            new RegExp(`<meta[^>]+property=["']${name}["'][^>]+content=["']([^"']+)["']`, 'i'),
+            new RegExp(`<meta[^>]+name=["']${name}["'][^>]+content=["']([^"']+)["']`, 'i'),
+            new RegExp(`<title[^>]*>([^<]+)</title>`, 'i')
+        ];
+        
+        for (const pattern of patterns) {
+            const match = html.match(pattern);
+            if (match && match[1]) {
+                return match[1].trim();
+            }
+        }
+    }
+    return null;
+}
+
+// 辅助函数：从URL获取域名
+function getDomain(url) {
+    try {
+        const urlObj = new URL(url);
+        return urlObj.hostname;
+    } catch (e) {
+        return url;
+    }
+}
 
 // 代理 /api/memos 路由
 app.get('/api/memos', async (req, res) => {
@@ -108,6 +192,12 @@ app.get('/api/memos', async (req, res) => {
             res.status(500).json({ error: 'API 代理失败', detail: err.message });
         }
     }
+});
+
+// 启动服务器
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running at http://localhost:${PORT}`);
 });
 
 module.exports = app;

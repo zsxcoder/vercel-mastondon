@@ -1,0 +1,87 @@
+/* 网页链接卡片样式 */
+.link-card-container {
+    margin: 1rem 0;
+}
+
+.link-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 20rem;
+    max-width: 90%;
+    margin: 0 auto;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    background-color: var(--ld-bg-card, #ffffff);
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: inherit;
+    overflow: hidden;
+}
+
+.link-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.link-card-info {
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.link-card-title {
+    font-weight: bold;
+    font-size: 0.95rem;
+    margin-bottom: 0.25rem;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+}
+
+.link-card-description {
+    opacity: 0.7;
+    font-size: 0.85rem;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.link-card-icon {
+    flex-shrink: 0;
+    height: 3rem;
+    max-width: 5rem;
+    border-radius: 0.5rem;
+    object-fit: cover;
+    background-color: rgba(128, 128, 128, 0.1);
+}
+
+/* 加载状态 */
+.link-card.loading {
+    opacity: 0.7;
+}
+
+.link-card.loading .link-card-title,
+.link-card.loading .link-card-description {
+    background-color: rgba(128, 128, 128, 0.1);
+    border-radius: 4px;
+    color: transparent;
+}
+
+/* 深色模式适配 */
+@media (prefers-color-scheme: dark) {
+    .link-card {
+        background-color: var(--ld-bg-card, #1a1a1a);
+        color: var(--ld-text, #ffffff);
+    }
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .link-card {
+        max-width: 95%;
+        width: auto;
+    }
+}

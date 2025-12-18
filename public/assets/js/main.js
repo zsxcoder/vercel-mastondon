@@ -124,6 +124,11 @@ function updateHTMl(data) {
         for (const [key, pattern] of Object.entries(patterns)) {
             processedContent = processedContent.replace(pattern.reg, pattern.transform);
         }
+        
+        // 处理链接卡片
+        if (typeof window.processLinkCards === 'function') {
+            processedContent = window.processLinkCards(processedContent);
+        }
 
         // 处理媒体附件
         if (item.media_attachments && item.media_attachments.length > 0) {
