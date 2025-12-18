@@ -20,29 +20,37 @@
             const startIndex = match.index;
             const endIndex = startIndex + url.length;
             
-            // 检查URL后面是否跟着非URL字符（如~、!、.等）
-            // 如果是，则从URL中移除这些字符
-            if (endIndex < content.length) {
-                const nextChar = content[endIndex];
-                if (/[~!@#$%^&*()\[\]{}:;"'<>,.?|\\]/.test(nextChar)) {
-                    url = url.slice(0, -1);
+            // 检查并移除URL末尾的标点符号
+            // 循环检查URL末尾是否是非URL字符
+            let trimmedUrl = url;
+            while (trimmedUrl.length > 0) {
+                const lastChar = trimmedUrl.charAt(trimmedUrl.length - 1);
+                // 定义URL中不允许的末尾字符
+                if (/[~!@#$%^&*()\[\]{}:;"'<>,.?|\\]/.test(lastChar)) {
+                    trimmedUrl = trimmedUrl.slice(0, -1);
+                } else {
+                    break;
                 }
             }
             
+            // 如果 trimmedUrl 与原始 url 不同，说明移除了标点符号
+            const actualUrl = trimmedUrl;
+            const trailingChars = url.substring(trimmedUrl.length); // 这些是URL后的标点符号
+            
             // 检查是否是图片链接，如果是则不处理为卡片
-            if (isImageUrl(url)) {
+            if (isImageUrl(actualUrl)) {
                 continue;
             }
             
             // 生成唯一标识符
             const linkId = 'link-' + Math.random().toString(36).substr(2, 9);
-            links.push({ id: linkId, url });
+            links.push({ id: linkId, url: actualUrl });
             
             // 替换原始内容中的链接为带标记的版本
             const beforeLink = processedContent.substring(0, startIndex);
             const afterLink = processedContent.substring(endIndex);
-            const markedLink = `<span class="original-link" data-link-id="${linkId}">${url}</span>`;
-            processedContent = beforeLink + markedLink + afterLink;
+            const markedLink = `<span class="original-link" data-link-id="${linkId}">${actualUrl}</span>`;
+            processedContent = beforeLink + markedLink + trailingChars + afterLink;
         }
         
         // 在内容末尾添加所有卡片容器
