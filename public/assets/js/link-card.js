@@ -5,25 +5,45 @@
     
     // 从内容中提取URL并转换为卡片
     function processLinkCards(content) {
-        // 首先识别所有链接并标记它们，但不立即替换
+        // 基础URL正则表达式
         const urlRegex = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/g;
         const links = [];
         let processedContent = content;
         
-        // 识别所有非图片链接
-        processedContent = processedContent.replace(urlRegex, (url) => {
+        // 手动处理每个匹配项，以便更精确地控制URL边界
+        const matches = [...content.matchAll(urlRegex)];
+        
+        // 从后往前处理，避免替换后影响位置索引
+        for (let i = matches.length - 1; i >= 0; i--) {
+            const match = matches[i];
+            let url = match[0];
+            const startIndex = match.index;
+            const endIndex = startIndex + url.length;
+            
+            // 检查URL后面是否跟着非URL字符（如~、!、.等）
+            // 如果是，则从URL中移除这些字符
+            if (endIndex < content.length) {
+                const nextChar = content[endIndex];
+                if (/[~!@#$%^&*()\[\]{}:;"'<>,.?|\\]/.test(nextChar)) {
+                    url = url.slice(0, -1);
+                }
+            }
+            
             // 检查是否是图片链接，如果是则不处理为卡片
             if (isImageUrl(url)) {
-                return url;
+                continue;
             }
             
             // 生成唯一标识符
             const linkId = 'link-' + Math.random().toString(36).substr(2, 9);
             links.push({ id: linkId, url });
             
-            // 返回带有标记的原始链接
-            return `<span class="original-link" data-link-id="${linkId}">${url}</span>`;
-        });
+            // 替换原始内容中的链接为带标记的版本
+            const beforeLink = processedContent.substring(0, startIndex);
+            const afterLink = processedContent.substring(endIndex);
+            const markedLink = `<span class="original-link" data-link-id="${linkId}">${url}</span>`;
+            processedContent = beforeLink + markedLink + afterLink;
+        }
         
         // 在内容末尾添加所有卡片容器
         if (links.length > 0) {
