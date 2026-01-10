@@ -129,7 +129,7 @@ function updateHTMl(data) {
         if (item.emojis && item.emojis.length > 0) {
             item.emojis.forEach(emoji => {
                 const regex = new RegExp(`:${emoji.shortcode}:`, 'g');
-                processedContent = processedContent.replace(regex, `<img src="${emoji.url}" alt="${emoji.shortcode}" class="emoji" style="height: 1em; width: 1em; vertical-align: middle;">`);
+                processedContent = processedContent.replace(regex, `<img src="${emoji.url}" alt="${emoji.shortcode}" class="emoji" style="height: 2em; width: 2em; vertical-align: middle;">`);
             });
         }
 
