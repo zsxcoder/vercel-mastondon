@@ -125,6 +125,14 @@ function updateHTMl(data) {
             processedContent = processedContent.replace(pattern.reg, pattern.transform);
         }
         
+        // 处理表情
+        if (item.emojis && item.emojis.length > 0) {
+            item.emojis.forEach(emoji => {
+                const regex = new RegExp(`:${emoji.shortcode}:`, 'g');
+                processedContent = processedContent.replace(regex, `<img src="${emoji.url}" alt="${emoji.shortcode}" class="emoji" style="height: 1em; width: 1em; vertical-align: middle;">`);
+            });
+        }
+
         // 处理链接卡片
         if (typeof window.processLinkCards === 'function') {
             processedContent = window.processLinkCards(processedContent);
